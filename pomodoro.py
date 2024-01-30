@@ -158,6 +158,6 @@ class PomodoroCommandLine(PyModoro):
         else:
             print("Alright. Have a good one!")
 
-
+#If run this file directly, it will run the following code
 if __name__ == "__main__":
     PomodoroCommandLine().start()
