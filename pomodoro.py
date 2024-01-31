@@ -2,9 +2,9 @@ from math import floor as roundfloor
 
 class Timer:
     def __init__(self):
-        self.working_seconds = 3*60
-        self.shortbreak_seconds = 1*60
-        self.longbreak_seconds = 2*60
+        self.working_seconds = 25*60
+        self.shortbreak_seconds = 5*60
+        self.longbreak_seconds = 15*60
 
         self.reps = 3
 
@@ -12,7 +12,7 @@ class Timer:
 
         self.step_seconds = self.working_seconds
 
-        self.current_rep = 0
+        self.current_rep = 0.5
 
 
     def passSecond(self):

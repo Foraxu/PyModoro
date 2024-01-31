@@ -44,8 +44,8 @@ reset_button = Button(text='reset')
 start_button.grid(column=0, row=2)
 reset_button.grid(column=2, row=2)
 
-#TODO implement the logic of it and put it where you find ok
 pause_button = Button(text='pause')
+pause_button.grid(column=1, row=2)
 
 
 #################################### Manage the functionality #######################################
@@ -59,8 +59,10 @@ class Pomodoro(Timer):
 
         self.is_running = False #If the clock is working, recieve True
         self.reset_pressed = False #If the reset button is pressed, recieve True
+        self.is_paused = False
 
         self.updateClock()
+        print(self.step)
 
     def start(self):
         """
@@ -72,13 +74,15 @@ class Pomodoro(Timer):
             
         if self.is_running:
             return
-        
-        if self.current_rep != 0:
+    
+        if self.current_rep != 0.5 and not self.is_paused:
             self.nextStep()
             self.setStepSeconds()
-
-        # Add a half rep for each time start method is called
-        self.current_rep += 0.5
+        
+        if self.is_paused:
+            self.is_paused = False
+        else:
+            self.current_rep += 0.5
 
         self.is_running = True
 
@@ -90,8 +94,21 @@ class Pomodoro(Timer):
             - if the amount of seconds of the current step is less than 0;
             - if the reset button is pressed;
             """
+            print(self.current_rep)
 
-            if self.current_rep > self.reps or self.step_seconds < 0:
+            def warning():
+                canvas.itemconfig(clock_text, text="Reseting...", font=(FONT_NAME, 20, 'bold'))
+
+            if self.current_rep > self.reps and self.step_seconds < 0:
+                self.is_running = False
+                play(notification)
+
+                canvas.itemconfig(clock_text, text="Finished!", font=(FONT_NAME, 20, 'bold'))
+
+                canvas.after(1000, warning)
+                canvas.after(3000, self.reset)
+
+            elif self.step_seconds < 0:
 
                 self.is_running = False # Stop running
 
@@ -100,6 +117,9 @@ class Pomodoro(Timer):
                 self.showNextStep()
                 
             elif self.reset_pressed:
+                self.is_running = False
+                return
+            elif self.is_paused:
                 self.is_running = False
                 return
             else:
@@ -111,11 +131,16 @@ class Pomodoro(Timer):
 
         clocking()
 
+    def pause(self):
+        self.is_paused = True
+
     def reset(self):
         self.reset_pressed = True
+        self.is_paused = False
         self.step = "working"
-        self.current_rep = 0
+        self.current_rep = 0.5
         self.setStepSeconds()
+        canvas.itemconfig(clock_text, font=(FONT_NAME, 35, 'bold'))
         self.updateClock()
 
     def remove_reset(self):
@@ -141,6 +166,7 @@ pomodoro = Pomodoro()
 # When the named button is pressed, call the funcion that follows the command parameter.
 start_button.config(command=pomodoro.start)
 reset_button.config(command=pomodoro.reset)
+pause_button.config(command=pomodoro.pause)
 
 
 root.mainloop()
