@@ -11,7 +11,7 @@ CANVAS_WIDTH = 200
 CANVAS_HEIGHT = 300
 FONT_NAME = "Courier"
 BACKGROUND_COLOR = '#f7f5dd' # a type of yellow
-CLOCK_SPEED = 1000
+CLOCK_SPEED = 20
 
 notification = AudioSegment.from_wav(file=NOTIFICATION_SOUND)
 
@@ -48,35 +48,60 @@ reset_button.grid(column=2, row=2)
 pause_button = Button(text='pause')
 
 
-####### Logic
+#################################### Manage the functionality #######################################
 
 class Pomodoro(Timer):
+    """
+    Implement the GUI with Timer
+    """
     def __init__(self):
         super().__init__()
-        self.is_running = False
-        self.reset_pressed = False
-        self.initialPrint()
+
+        self.is_running = False #If the clock is working, recieve True
+        self.reset_pressed = False #If the reset button is pressed, recieve True
+
+        self.updateClock()
 
     def start(self):
+        """
+        Start the clock
+        """
+        # If reset button is pressed
         if self.reset_pressed:
             self.remove_reset()
+            
         if self.is_running:
             return
+        
+        if self.current_rep != 0:
+            self.nextStep()
+            self.setStepSeconds()
+
+        # Add a half rep for each time start method is called
         self.current_rep += 0.5
-        self.setStepTime()
+
         self.is_running = True
 
         def clocking():
+            """
+            Event handled by the canvas.after method. Modify the text written in the canvas clock_text item.\n
+            "clocking" is called repeatedly expect:
+            - if the current rep is greater than the max reps;
+            - if the amount of seconds of the current step is less than 0;
+            - if the reset button is pressed;
+            """
+
             if self.current_rep > self.reps or self.step_seconds < 0:
-                self.is_running = False
-                play(notification)
-                self.setStepTime()
-                text = self.formatTime()
-                canvas.itemconfig(clock_text, text=text)
-                self.setStepTime()
+
+                self.is_running = False # Stop running
+
+                play(notification)          # ------ Play the notification sound with pydub module
+                
+                self.showNextStep()
                 
             elif self.reset_pressed:
-                self.is_running = False                
+                self.is_running = False
+                return
             else:
                 time = self.formatTime()
                 canvas.itemconfig(clock_text, text=time)
@@ -88,23 +113,34 @@ class Pomodoro(Timer):
 
     def reset(self):
         self.reset_pressed = True
-        self.step = 1
+        self.step = "working"
         self.current_rep = 0
-        self.initialPrint()
+        self.setStepSeconds()
+        self.updateClock()
 
     def remove_reset(self):
         self.reset_pressed = False
         
-    def initialPrint(self):
-        self.setStepTime()
-        text = self.formatTime()
-        canvas.itemconfig(clock_text, text=text)
-        self.setStepTime()
+    def updateClock(self):
+        time=self.formatTime()
+        canvas.itemconfig(clock_text, text=time)
 
+    def showNextStep(self):
+        #There's a little trick here: nextStep is called for printing the next step time on the screen and then, called one more time
+        # to put it in the same step it was before - since there are only two steps that nextStep goes through(the working and the break).
+        self.nextStep()
+        self.setStepSeconds()
+        self.updateClock()
+        self.nextStep()
 
+        
 pomodoro = Pomodoro()
-            
+
+################################ ======= Buttons Logic ======== ########################################
+
+# When the named button is pressed, call the funcion that follows the command parameter.
 start_button.config(command=pomodoro.start)
 reset_button.config(command=pomodoro.reset)
+
 
 root.mainloop()
