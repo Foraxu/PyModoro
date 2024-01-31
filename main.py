@@ -64,7 +64,6 @@ class Pomodoro(Timer):
         self.is_paused = False
 
         self.updateClock()
-        print(self.step)
 
     def start(self):
         """
