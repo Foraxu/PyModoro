@@ -11,7 +11,7 @@ CANVAS_WIDTH = 200
 CANVAS_HEIGHT = 300
 FONT_NAME = "Courier"
 BACKGROUND_COLOR = '#f7f5dd' # a type of yellow
-CLOCK_SPEED = 10
+CLOCK_SPEED = 1000
 
 notification = AudioSegment.from_wav(file=NOTIFICATION_SOUND)
 
@@ -59,8 +59,9 @@ class Pomodoro(Timer):
 
         self.is_running = False #If the clock is working, recieve True
         self.was_reseted = False #If the reset button is pressed, recieve True
-        self.is_paused = False
-
+        self.is_paused = False #If the pause button is pressed, recieve True
+        self.changeAndSetStep()
+        self.updateClock()
 
     def start(self):
         """
@@ -79,7 +80,6 @@ class Pomodoro(Timer):
             self.is_paused = False
 
         self.is_running = True
-        print(f'{self.ongoing_rep}, {self.ongoing_step}')
 
         self.clocking()
 
