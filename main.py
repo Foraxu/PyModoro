@@ -63,8 +63,6 @@ class Pomodoro(Timer):
         self.was_reseted = False #If the reset button is pressed, recieve True
         self.is_paused = False
 
-        self.changeAndSetStep()
-        self.updateClock()
 
     def start(self):
         """
