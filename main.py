@@ -1,14 +1,12 @@
 #! ./.venv/bin/python3
 
-###TODO complete adding the comments
-
 from tkinter import Tk, Canvas, PhotoImage, Button, Label
 from pydub import AudioSegment
 from pydub.playback import play
-from pomodoro import Timer
+from brain.timer import Timer
 
-POMODORO_IMG = 'tomato.png'
-NOTIFICATION_SOUND = 'notification.wav'
+POMODORO_IMG = './resources/img/tomato.png'
+NOTIFICATION_SOUND = './resources/sounds/notification.wav'
 CANVAS_WIDTH = 200
 CANVAS_HEIGHT = 300
 FONT_NAME = "Courier"
