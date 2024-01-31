@@ -1,5 +1,7 @@
 #! ./.venv/bin/python3
 
+###TODO complete adding the comments
+
 from tkinter import Tk, Canvas, PhotoImage, Button, Label
 from pydub import AudioSegment
 from pydub.playback import play
@@ -94,9 +96,8 @@ class Pomodoro(Timer):
             - if the amount of seconds of the current step is less than 0;
             - if the reset button is pressed;
             """
-            print(self.current_rep)
 
-            def warning():
+            def resetingWarn():
                 canvas.itemconfig(clock_text, text="Reseting...", font=(FONT_NAME, 20, 'bold'))
 
             if self.current_rep > self.reps and self.step_seconds < 0:
@@ -105,7 +106,7 @@ class Pomodoro(Timer):
 
                 canvas.itemconfig(clock_text, text="Finished!", font=(FONT_NAME, 20, 'bold'))
 
-                canvas.after(1000, warning)
+                canvas.after(1000, resetingWarn)
                 canvas.after(3000, self.reset)
 
             elif self.step_seconds < 0:
