@@ -13,11 +13,11 @@ CANVAS_WIDTH = 200
 CANVAS_HEIGHT = 300
 FONT_NAME = "Courier"
 BACKGROUND_COLOR = '#f7f5dd' # a type of yellow
-CLOCK_SPEED = 1000
+CLOCK_SPEED = 10
 
 notification = AudioSegment.from_wav(file=NOTIFICATION_SOUND)
 
-######## GUI
+############################################### GUI ########################################################
 
 # create main screen from Tk class
 root = Tk()
@@ -50,7 +50,7 @@ pause_button = Button(text='pause')
 pause_button.grid(column=1, row=2)
 
 
-#################################### Manage the functionality #######################################
+#################################### POMODORO'S LOGIC #######################################
 
 class Pomodoro(Timer):
     """
@@ -60,32 +60,30 @@ class Pomodoro(Timer):
         super().__init__()
 
         self.is_running = False #If the clock is working, recieve True
-        self.reset_pressed = False #If the reset button is pressed, recieve True
+        self.was_reseted = False #If the reset button is pressed, recieve True
         self.is_paused = False
-
+        self.changeAndSetStep()
         self.updateClock()
 
     def start(self):
         """
         Start the clock
-        """
-        # If reset button is pressed
-        if self.reset_pressed:
-            self.remove_reset()
-            
+        """          
+        
         if self.is_running:
             return
-    
-        if self.current_rep != 0.5 and not self.is_paused:
-            self.nextStep()
-            self.setStepSeconds()
-        
-        if self.is_paused:
+        elif self.was_reseted == True:                    # If the reset button is pressed when the clock is stopped, the condition inside the clocking() will not/
+                                                          #be triggered. Therefore, it is handled here.
+            self.was_reseted = False
+            
+        if self.ongoing_step == 'working' and not self.is_paused:
+            self.ongoing_rep += 1
+
+        elif self.is_paused:
             self.is_paused = False
-        else:
-            self.current_rep += 0.5
 
         self.is_running = True
+        print(f'{self.ongoing_rep}, {self.ongoing_step}')
 
         def clocking():
             """
@@ -99,7 +97,16 @@ class Pomodoro(Timer):
             def resetingWarn():
                 canvas.itemconfig(clock_text, text="Reseting...", font=(FONT_NAME, 20, 'bold'))
 
-            if self.current_rep > self.reps and self.step_seconds < 0:
+            if self.was_reseted:
+                self.is_running = False
+                self.was_reseted = False
+                return
+            
+            elif self.is_paused:
+                self.is_running = False
+                return
+            
+            elif self.ongoing_rep == self.max_reps and self.step_seconds < 0 and self.ongoing_step == 'break':
                 self.is_running = False
                 play(notification)
 
@@ -113,15 +120,11 @@ class Pomodoro(Timer):
                 self.is_running = False # Stop running
 
                 play(notification)          # ------ Play the notification sound with pydub module
-                
-                self.showNextStep()
-                
-            elif self.reset_pressed:
-                self.is_running = False
-                return
-            elif self.is_paused:
-                self.is_running = False
-                return
+
+                self.changeAndSetStep()
+
+                self.updateClock()
+
             else:
                 time = self.formatTime()
                 canvas.itemconfig(clock_text, text=time)
@@ -130,21 +133,23 @@ class Pomodoro(Timer):
                 canvas.after(CLOCK_SPEED, clocking)
 
         clocking()
+        
 
     def pause(self):
         self.is_paused = True
 
     def reset(self):
-        self.reset_pressed = True
+        self.was_reseted = True
         self.is_paused = False
-        self.step = "working"
-        self.current_rep = 0.5
-        self.setStepSeconds()
+        self.ongoing_step = None
+        self.ongoing_rep = 0
+
+        self.changeAndSetStep()
         canvas.itemconfig(clock_text, font=(FONT_NAME, 35, 'bold'))
         self.updateClock()
 
     def remove_reset(self):
-        self.reset_pressed = False
+        self.was_reseted = False
         
     def updateClock(self):
         time=self.formatTime()
@@ -153,10 +158,10 @@ class Pomodoro(Timer):
     def showNextStep(self):
         #There's a little trick here: nextStep is called for printing the next step time on the screen and then, called one more time
         # to put it in the same step it was before - since there are only two steps that nextStep goes through(the working and the break).
-        self.nextStep()
+        self.changeStep()
         self.setStepSeconds()
         self.updateClock()
-        self.nextStep()
+        self.changeStep()
 
         
 pomodoro = Pomodoro()
@@ -167,6 +172,5 @@ pomodoro = Pomodoro()
 start_button.config(command=pomodoro.start)
 reset_button.config(command=pomodoro.reset)
 pause_button.config(command=pomodoro.pause)
-
 
 root.mainloop()

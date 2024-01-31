@@ -2,17 +2,17 @@ from math import floor as roundfloor
 
 class Timer:
     def __init__(self):
-        self.working_seconds = 25*60
-        self.shortbreak_seconds = 5*60
-        self.longbreak_seconds = 15*60
+        self.workingstep_seconds = 7*60
+        self.shortbreakstep_seconds = 2*60
+        self.longbreakstep_seconds = 5*60
 
-        self.reps = 3
+        self.max_reps = 3
 
-        self.step = 'working'
+        self.ongoing_step = None 
 
-        self.step_seconds = self.working_seconds
+        self.step_seconds = None
 
-        self.current_rep = 0.5
+        self.ongoing_rep = 0
 
 
     def passSecond(self):
@@ -20,6 +20,7 @@ class Timer:
         Subtract one second from the time that setStepSeconds method has set.
         """
         self.step_seconds -= 1
+
 
     def setStepSeconds(self):
         """
@@ -30,18 +31,20 @@ class Timer:
         The last working step is defined when its break step is set in the same moment that the current rep is equal to the max
         number of reps - defined in self.reps.
         """
-        if self.step == 'working':
-            self.step_seconds = self.working_seconds
-        elif self.step == 'break' and self.current_rep == self.reps:
-            self.step_seconds = self.longbreak_seconds
-        elif self.step == 'break':
-            self.step_seconds = self.shortbreak_seconds
+        if self.ongoing_step == 'working':
+            self.step_seconds = self.workingstep_seconds
+        elif self.ongoing_step == 'break' and self.ongoing_rep == self.max_reps:
+            self.step_seconds = self.longbreakstep_seconds
+        elif self.ongoing_step == 'break':
+            self.step_seconds = self.shortbreakstep_seconds
         
-    def nextStep(self):
-        if self.step == "working":
-            self.step = "break"
-        elif self.step == 'break':
-            self.step = "working"
+
+    def changeStep(self):
+        if self.ongoing_step == "working":
+            self.ongoing_step = "break"
+        elif self.ongoing_step == 'break':
+            self.ongoing_step = "working"
+            
     
     def formatTime(self):
         """
@@ -58,3 +61,20 @@ class Timer:
         
         return f"{minutes}:{seconds}"
     
+    def setFirstStep(self, step:str):
+        """
+        'step' parameter must be whether 'working' or 'break' only.\n
+        By default, the first step is defined as 'working'. To modify it, call it before calling changeAndSetStep
+        """
+        self.ongoing_step = step
+        return
+    
+    def changeAndSetStep(self):
+        """
+        
+        """
+        if self.ongoing_step == None:
+            self.setFirstStep('working')
+        else:
+            self.changeStep()
+        self.setStepSeconds()
