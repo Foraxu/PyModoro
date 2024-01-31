@@ -11,7 +11,7 @@ CANVAS_WIDTH = 200
 CANVAS_HEIGHT = 300
 FONT_NAME = "Courier"
 BACKGROUND_COLOR = '#f7f5dd' # a type of yellow
-CLOCK_SPEED = 20
+CLOCK_SPEED = 1000
 
 notification = AudioSegment.from_wav(file=NOTIFICATION_SOUND)
 
