@@ -62,14 +62,14 @@ class Pomodoro(Timer):
         self.is_running = False #If the clock is working, recieve True
         self.was_reseted = False #If the reset button is pressed, recieve True
         self.is_paused = False
+
         self.changeAndSetStep()
         self.updateClock()
 
     def start(self):
         """
-        Start the clock
-        """          
         
+        """
         if self.is_running:
             return
         elif self.was_reseted == True:                    # If the reset button is pressed when the clock is stopped, the condition inside the clocking() will not/
@@ -85,73 +85,76 @@ class Pomodoro(Timer):
         self.is_running = True
         print(f'{self.ongoing_rep}, {self.ongoing_step}')
 
-        def clocking():
+        self.clocking()
+
+    def clocking(self):
+        """
+        Event handled by the canvas.after method, being called repeatedly after a set amount of time.
+         
+        Manage the clock functionality.\n
+        """
+        def notifyReset():
             """
-            Event handled by the canvas.after method. Modify the text written in the canvas clock_text item.\n
-            "clocking" is called repeatedly expect:
-            - if the current rep is greater than the max reps;
-            - if the amount of seconds of the current step is less than 0;
-            - if the reset button is pressed;
+            Change the text in the clock to "Reseting..."
             """
+            canvas.itemconfig(clock_text, text="Reseting...", font=(FONT_NAME, 20, 'bold'))
 
-            def resetingWarn():
-                canvas.itemconfig(clock_text, text="Reseting...", font=(FONT_NAME, 20, 'bold'))
+        if self.was_reseted:
+            self.is_running = False
+            self.was_reseted = False
+            return
+        
+        elif self.is_paused:
+            self.is_running = False
+            return
+        
+        elif self.ongoing_rep == self.max_reps and self.step_seconds < 0 and self.ongoing_step == 'break':
+            self.is_running = False
+            play(notification)
+            canvas.itemconfig(clock_text, text="Finished!", font=(FONT_NAME, 20, 'bold'))
+            canvas.after(1000, notifyReset)
+            canvas.after(3000, self.reset)
 
-            if self.was_reseted:
-                self.is_running = False
-                self.was_reseted = False
-                return
-            
-            elif self.is_paused:
-                self.is_running = False
-                return
-            
-            elif self.ongoing_rep == self.max_reps and self.step_seconds < 0 and self.ongoing_step == 'break':
-                self.is_running = False
-                play(notification)
-
-                canvas.itemconfig(clock_text, text="Finished!", font=(FONT_NAME, 20, 'bold'))
-
-                canvas.after(1000, resetingWarn)
-                canvas.after(3000, self.reset)
-
-            elif self.step_seconds < 0:
-
-                self.is_running = False # Stop running
-
-                play(notification)          # ------ Play the notification sound with pydub module
-
-                self.changeAndSetStep()
-
-                self.updateClock()
-
-            else:
-                time = self.formatTime()
-                canvas.itemconfig(clock_text, text=time)
-                self.passSecond()
-
-                canvas.after(CLOCK_SPEED, clocking)
-
-        clocking()
+        elif self.step_seconds < 0:
+            self.is_running = False # Stop running
+            play(notification)          # ------ Play the notification sound with pydub module
+            self.changeAndSetStep()
+            self.updateClock()
+        else:
+            time = self.formatTime()
+            canvas.itemconfig(clock_text, text=time)
+            self.passSecond()
+            canvas.after(CLOCK_SPEED, self.clocking)
         
 
     def pause(self):
-        self.is_paused = True
+        """
+        - Only works if the Pomodoro is already working.\n
+        Pauses the clock exactly on the point it was when the button pause is pressed.\n
+        Does not affect the on going step.
+        """
+        if self.ongoing_rep != 0:      #The pause function only applies when the program is already running. 
+            self.is_paused = True          #Therefore, if it's not running yet, "is_paused" will not receive True.
+
 
     def reset(self):
+        """
+        Reset all the Pomodoro's attributes to their default values.
+        """
         self.was_reseted = True
         self.is_paused = False
         self.ongoing_step = None
         self.ongoing_rep = 0
 
         self.changeAndSetStep()
-        canvas.itemconfig(clock_text, font=(FONT_NAME, 35, 'bold'))
+        canvas.itemconfig(clock_text, font=(FONT_NAME, 35, 'bold'))    # Reset clock style.
         self.updateClock()
 
-    def remove_reset(self):
-        self.was_reseted = False
         
     def updateClock(self):
+        """
+        Update the clock with the present time.
+        """
         time=self.formatTime()
         canvas.itemconfig(clock_text, text=time)
 
