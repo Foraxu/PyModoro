@@ -155,14 +155,6 @@ class Pomodoro(Timer):
         time=self.formatTime()
         canvas.itemconfig(clock_text, text=time)
 
-    def showNextStep(self):
-        #There's a little trick here: nextStep is called for printing the next step time on the screen and then, called one more time
-        # to put it in the same step it was before - since there are only two steps that nextStep goes through(the working and the break).
-        self.changeStep()
-        self.setStepSeconds()
-        self.updateClock()
-        self.changeStep()
-
         
 pomodoro = Pomodoro()
 
